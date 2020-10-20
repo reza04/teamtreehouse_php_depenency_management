@@ -1,64 +1,95 @@
 <?php
 
-if(isset($_POST['action']))
-{
-  $success="Email Berhasil terkirim";
+$nama=$_POST['awal'].' '.$_POST['akhir'];
+
+//Import PHPMailer classes into the global namespace
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\OAuth;
+// Alias the League Google OAuth2 provider class
+use League\OAuth2\Client\Provider\Google;
+
+//SMTP needs accurate times, and the PHP time zone MUST be set
+//This should be done in your php.ini, but this is how to do it if you don't have access to that
+
+date_default_timezone_set('Etc/UTC');
+
+require 'vendor/autoload.php';
+require 'config_api.php';
+
+$mail=new PHPMailer();
+
+//Tell PHPMailer to use SMTP
+$mail->isSMTP();
+
+//Enable SMTP debugging
+// SMTP::DEBUG_OFF = off (for production use)
+// SMTP::DEBUG_CLIENT = client messages
+// SMTP::DEBUG_SERVER = client and server messages
+// $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+
+//Set the hostname of the mail server
+$mail->Host = 'smtp.gmail.com';
+
+//Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
+$mail->Port = 587;
+
+//Set the encryption mechanism to use - STARTTLS or SMTPS
+$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+
+//Whether to use SMTP authentication
+$mail->SMTPAuth = true;
+
+//Set AuthType to use XOAUTH2
+$mail->AuthType = 'XOAUTH2';
+
+
+//Create a new OAuth2 provider instance
+$provider = new Google(
+    [
+        'clientId' => $clientId,
+        'clientSecret' => $clientSecret,
+    ]
+);
+
+//Pass the OAuth provider instance to PHPMailer
+$mail->setOAuth(
+    new OAuth(
+        [
+            'provider' => $provider,
+            'clientId' => $clientId,
+            'clientSecret' => $clientSecret,
+            'refreshToken' => $refreshToken,
+            'userName' => $email,
+        ]
+    )
+);
+
+//Set who the message is to be sent from
+//For gmail, this generally needs to be the same as the user you logged in as
+$mail->setFrom($email,$nama);
+
+//Set who the message is to be sent to
+$mail->addAddress(($_POST['email']), 'arip devel');
+//Set the subject line
+$mail->Subject = $nama;
+
+//Read an HTML message body from an external file, convert referenced images to embedded,
+//convert HTML into a basic plain-text alternative body
+$mail->CharSet = PHPMailer::CHARSET_UTF8;
+$mail->msgHTML(($_POST['kritik']), __DIR__);
+
+//Replace the plain text body with one created manually
+$mail->AltBody = 'This is a plain-text message body';
+
+//Attach an image file
+// $mail->addAttachment('images/phpmailer_mini.png');
+
+//send the message, check for errors
+if (!$mail->send()) {
+    echo 'Mailer Error: ' . $mail->ErrorInfo;
+} else {
+    // echo 'Message sent!';
+    header ('location:send.php?action=success');
 }
-
 ?>
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-
-    <title>Hello, world!</title>
-  </head>
-  <body>
-
-    <div class="container">
-        <div class="row">
-            <div class="col-4 mt-4">
-                <h2>Send Email</h2>
-
-                <?php if(isset($success)):?>
-                  <div class="alert alert-primary" role="alert">
-                    <?php echo $success ?>
-                  </div>
-                <?php endif; ?>
-
-                <form method="POST" action="index.php">
-                    <div class="form-group">
-                      <label for="exampleInputEmail1">Name</label>
-                      <input type="text" class="form-control"  placeholder="Masukkan nama" name="awal" id="exampleInputEmail1" aria-describedby="emailHelp" >
-                    </div>
-                    <div class="form-group">
-                        <label for="exampleInputEmail1">Last Name</label>
-                        <input type="text" class="form-control" required placeholder="Masukkan nama belakang" name="akhir" id="exampleInputEmail1" aria-describedby="emailHelp">
-                      </div>
-                    <div class="form-group">
-                      <label for="exampleInputEmail1">Email address</label>
-                      <input type="email" class="form-control" required placeholder="Masukkan email yang akan anda kirim" name="email" id="exampleInputEmail1" aria-describedby="emailHelp">
-                    </div>
-                    <div class="form-group">
-                        <label for="exampleFormControlTextarea1">Kritik</label>
-                        <textarea class="form-control" required placeholder="Isi" name="kritik" id="exampleFormControlTextarea1" name="critic" rows="3"></textarea>
-                    </div>
-                    <input type="submit" value="Kirim" name="input" class="btn btn-primary"></input>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-
-
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
-  </body>
-</html>
