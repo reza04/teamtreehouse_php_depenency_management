@@ -1,0 +1,11 @@
+
+
+$email = 'rezaaditya9132@gmail.com';
+$clientId = '287061062864-spo5gj601scccoarjh1t7novm01rhogr.apps.googleusercontent.com';
+$clientSecret = '_5KyWWwzppZTZwpnmNVcNiiZ';
+
+//Obtained by configuring and running get_oauth_token.php
+//after setting up an app in Google Developer Console.
+
+
+$refreshToken = 'RANDHOMCHAR.....1/0';
