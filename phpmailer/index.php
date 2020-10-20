@@ -26,12 +26,16 @@ if(isset($_POST['action']))
             <div class="col-4 mt-4">
                 <h2>Send Email</h2>
 
-                
+                <?php if(isset($success)):?>
+                  <div class="alert alert-primary" role="alert">
+                    <?php echo $success ?>
+                  </div>
+                <?php endif; ?>
 
                 <form method="POST" action="index.php">
                     <div class="form-group">
                       <label for="exampleInputEmail1">Name</label>
-                      <input type="text" class="form-control" required placeholder="Masukkan nama" name="awal" id="exampleInputEmail1" aria-describedby="emailHelp" >
+                      <input type="text" class="form-control"  placeholder="Masukkan nama" name="awal" id="exampleInputEmail1" aria-describedby="emailHelp" >
                     </div>
                     <div class="form-group">
                         <label for="exampleInputEmail1">Last Name</label>
